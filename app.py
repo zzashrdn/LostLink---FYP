@@ -21,28 +21,59 @@ app.secret_key = "supersecretkey"
 from urllib.parse import urlparse
 import os
 from dotenv import load_dotenv
+from flask_mysqldb import MySQL
+import MySQLdb
+import MySQLdb.cursors
+import MySQLdb.constants.CLIENT as CLIENT
 
 load_dotenv()
 
 db_url = os.getenv('DATABASE_URL')
 if db_url:
+    # --- Remote DB (Render / PlanetScale) ---
     url = urlparse(db_url)
-    app.config['MYSQL_HOST'] = url.hostname
-    app.config['MYSQL_USER'] = url.username
-    app.config['MYSQL_PASSWORD'] = url.password
-    app.config['MYSQL_DB'] = url.path.lstrip('/')
-    app.config['MYSQL_PORT'] = url.port or 3306
+    ssl_config = {'ca': '/etc/ssl/certs/ca-certificates.crt'}  # ✅ use built-in CA bundle
+    app.config.update(
+        MYSQL_HOST=url.hostname,
+        MYSQL_USER=url.username,
+        MYSQL_PASSWORD=url.password,
+        MYSQL_DB=url.path.lstrip('/'),
+        MYSQL_PORT=url.port or 3306,
+        MYSQL_CHARSET='utf8mb4',
+        MYSQL_CLIENT_FLAGS=[CLIENT.SSL],
+        MYSQL_SSL_CA='/etc/ssl/certs/ca-certificates.crt',
+    )
+
+    # ✅ direct SSL test connection (verifies before MySQL init)
+    try:
+        test_conn = MySQLdb.connect(
+            host=url.hostname,
+            user=url.username,
+            passwd=url.password,
+            db=url.path.lstrip('/'),
+            port=url.port or 3306,
+            client_flag=CLIENT.SSL,
+            ssl=ssl_config,
+            cursorclass=MySQLdb.cursors.DictCursor
+        )
+        test_conn.close()
+        print("✅ Remote MySQL SSL connection verified.")
+    except Exception as e:
+        print("❌ Remote MySQL SSL connection failed:", e)
+
 else:
-    # fallback to local .env
-    app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
-    app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
-    app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
-    app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
-    app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
-    app.config['MYSQL_SSL_CA'] = '/etc/ssl/certs/ca-certificates.crt'  # ✅ required for PlanetScale
-    app.config['MYSQL_CHARSET'] = 'utf8mb4'
+    # --- Local environment ---
+    app.config.update(
+        MYSQL_HOST=os.getenv('MYSQL_HOST'),
+        MYSQL_USER=os.getenv('MYSQL_USER'),
+        MYSQL_PASSWORD=os.getenv('MYSQL_PASSWORD'),
+        MYSQL_DB=os.getenv('MYSQL_DB'),
+        MYSQL_PORT=int(os.getenv('MYSQL_PORT', 3306)),
+        MYSQL_CHARSET='utf8mb4',
+    )
 
 mysql = MySQL(app)
+
 
 
 # ======================
