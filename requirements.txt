@@ -1,5 +1,7 @@
-flask
+Flask
 flask-mysqldb
 flask-wtf
-wtforms
-werkzeug
+WTForms
+Werkzeug
+gunicorn
+python-dotenv
