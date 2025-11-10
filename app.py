@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 import re 
 
+
 # ======================
 # Flask App Config
 # ======================
@@ -17,11 +18,29 @@ app.secret_key = "supersecretkey"
 # ======================
 # MySQL Configuration
 # ======================
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'N@ruliz78'
-app.config['MYSQL_DB'] = 'lostlink'
-app.config['MYSQL_CHARSET'] = 'utf8mb4'      # ✅ fixes emoji insertion
+from urllib.parse import urlparse
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+db_url = os.getenv('DATABASE_URL')
+if db_url:
+    url = urlparse(db_url)
+    app.config['MYSQL_HOST'] = url.hostname
+    app.config['MYSQL_USER'] = url.username
+    app.config['MYSQL_PASSWORD'] = url.password
+    app.config['MYSQL_DB'] = url.path.lstrip('/')
+    app.config['MYSQL_PORT'] = url.port or 3306
+else:
+    # fallback to local .env
+    app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+    app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+    app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
+    app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
+    app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
+
+app.config['MYSQL_CHARSET'] = 'utf8mb4'
 
 mysql = MySQL(app)
 
@@ -45,6 +64,17 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), "static/uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
+# ======================
+# Route
+# ======================
+@app.route('/')
+def index():
+    # Redirect straight to home or login
+    if 'user_id' in session:
+        return redirect(url_for('home'))
+    else:
+        return redirect(url_for('login'))
 
 # ======================
 # Home Page
@@ -213,11 +243,18 @@ def admin_items():
 @admin_required
 def admin_delete_item(item_id):
     cur = mysql.connection.cursor()
+
+    # Delete activity logs tied to this item first
+    cur.execute("DELETE FROM activity_log WHERE item_id = %s", (item_id,))
+
+    # Then delete the item itself
     cur.execute("DELETE FROM items WHERE id = %s", (item_id,))
     mysql.connection.commit()
     cur.close()
-    flash("Item deleted successfully!", "info")
+
+    flash("🗑️ Item and related logs deleted successfully!", "info")
     return redirect(url_for('admin_items'))
+
 
 
 
@@ -230,14 +267,14 @@ def admin_claims():
     cur.execute("""
         SELECT 
             id, item_name, description, location, date_reported,
-            user_id, claimed_by, security_question, security_answer,
+            user_id, claimed_by, security_question, user_answer,
             claim_status, contact_number, utp_email, proof_photo
-            FROM items
-            WHERE claim_status IN ('pending', 'approved', 'rejected')
-            ORDER BY 
-                FIELD(claim_status, 'pending', 'approved', 'rejected'),
+        FROM items
+        WHERE claim_status IN ('pending', 'approved', 'rejected')
+        ORDER BY FIELD(claim_status, 'pending', 'approved', 'rejected'),
                 date_reported DESC
     """)
+
 
 
 
