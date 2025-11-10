@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LostLink</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+  <style>
+    /* ===============================
+       NAVBAR STYLING
+       =============================== */
+    .navbar {
+      background: #a8d8f0; /* pastel light blue */
+      padding: 14px 25px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .navbar .logo a {
+      color: #00334d;
+      font-weight: 800;
+      font-size: 24px;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+
+    .navbar .logo a:hover {
+      text-decoration: underline;
+    }
+
+    /* Navbar Right Section */
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Logout & Notification Buttons */
+    .logout-btn, .notif-btn {
+      background: linear-gradient(45deg, #0077b6, #00b4d8);
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover, .notif-btn:hover {
+      background: linear-gradient(45deg, #00b4d8, #0077b6);
+      transform: translateY(-1px);
+    }
+
+    .overlay {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .container {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    /* ===============================
+       PAGE LAYOUT
+       =============================== */
+    body {
+      margin: 0;
+      padding-top: 70px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: url("{{ url_for('static', filename='utp.jpg') }}") no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    /* ======================================================
+       FLASH MESSAGES (with Close Button + Animation)
+       ====================================================== */
+    .flash-wrap {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+      position: fixed;
+      top: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+    }
+
+    .flash {
+      position: relative;
+      display: block;
+      width: fit-content;
+      max-width: 80%;
+      margin: 10px auto;
+      padding: 14px 40px 14px 24px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 0.4s ease-in-out;
+      transition: all 0.3s ease-in-out;
+      white-space: pre-line;
+    }
+
+    .flash.success {
+      background-color: #e7ffe7;
+      color: #007a33;
+      border: 1px solid #00a650;
+    }
+
+    .flash.error {
+      background-color: #ffe6e6;
+      color: #b30000;
+      border: 1px solid #ff4d4d;
+    }
+
+    .flash.info {
+      background-color: #e6f3ff;
+      color: #004d99;
+      border: 1px solid #3399ff;
+    }
+
+    .flash .close-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      color: #666;
+      font-weight: bold;
+      transition: color 0.2s ease-in-out;
+    }
+
+    .flash .close-btn:hover {
+      color: #000;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    .flash {
+      animation: fadeIn 0.4s ease-in-out, fadeOut 0.6s ease-in-out 6s forwards;
+    }
+
+    /* ===============================
+       RESPONSIVE FIX
+       =============================== */
+    @media (max-width: 480px) {
+      .auth-container {
+        width: 90%;
+        padding: 30px;
+      }
+      .auth-container h2 {
+        font-size: 20px;
+      }
+      .navbar-right {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="logo">
+      {% if session.get('is_admin') == 1 %}
+        <a href="{{ url_for('admin_dashboard') }}">LostLink</a>
+      {% else %}
+        <a href="{{ url_for('home') }}">LostLink</a>
+      {% endif %}
+    </div>
+
+    {% if session.get('user_id') %}
+    <div class="navbar-right">
+      {% if session.get('is_admin') != 1 %}
+        <!-- Only normal users see this -->
+        <form action="{{ url_for('notifications') }}" method="GET" style="margin:0;">
+          <button type="submit" class="notif-btn">🔔 Notifications</button>
+        </form>
+      {% endif %}
+      <form action="{{ url_for('logout') }}" method="GET" style="margin:0;">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- PAGE CONTENT -->
+  <div class="overlay">
+    <div class="container">
+      <div class="flash-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">
+                {{ message }}
+                <span class="close-btn">&times;</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <!-- Flash close button JS -->
+  <script>
+  document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("close-btn")) {
+      const flash = e.target.parentElement;
+      flash.style.opacity = "0";
+      flash.style.transform = "translateY(-10px)";
+      setTimeout(() => flash.remove(), 300);
+    }
+  });
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

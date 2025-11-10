@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="claims-wrapper">
+  <div class="claims-header">
+    <h2>Manage Claims</h2>
+
+    <!-- 🔍 Search Bar -->
+    <div class="filter-bar">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search item, user, or location..."
+        onkeyup="filterTable()"
+      />
+    </div>
+
+    <!-- 🟦 Category Tabs -->
+    <div class="status-tabs">
+      <button class="tab-btn active" onclick="filterStatus('all', event)">Show All</button>
+      <button class="tab-btn" onclick="filterStatus('pending', event)">Pending</button>
+      <button class="tab-btn" onclick="filterStatus('approved', event)">Approved</button>
+      <button class="tab-btn" onclick="filterStatus('rejected', event)">Rejected</button>
+    </div>
+  </div>
+
+  {% if claims %}
+  <div class="table-container">
+    <table class="claims-table" id="claimsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Item Name</th>
+          <th>Description</th>
+          <th>Location</th>
+          <th>Date Reported</th>
+          <th>Reported By</th>
+          <th>Claimed By</th>
+          <th>Finder Contact</th>
+          <th>Finder UTP Email</th>
+          <th>Security Question</th>
+          <th>User Answer</th>
+          <th>Proof Photo</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for claim in claims %}
+        <tr data-status="{{ claim[9]|lower }}">
+          <td>{{ claim[0] }}</td>
+          <td>{{ claim[1] }}</td>
+          <td>{{ claim[2] }}</td>
+          <td>{{ claim[3] }}</td>
+          <td>{{ claim[4] }}</td>
+          <td>{{ claim[5] }}</td>
+          <td>{{ claim[6] or '—' }}</td>
+          <td>{{ claim[10] or '—' }}</td>
+          <td>{{ claim[11] or '—' }}</td>
+          <td><em>{{ claim[7] or '—' }}</em></td>
+          <td><strong>{{ claim[8] or '—' }}</strong></td>
+
+          <!-- Proof Photo -->
+          {% if claim[12] %}
+          <td>
+            <img src="{{ url_for('static', filename='uploads/' + claim[12]) }}" 
+                 alt="Proof photo"
+                 style="width:120px; border-radius:10px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+          </td>
+          {% else %}
+          <td><em>No proof photo</em></td>
+          {% endif %}
+
+          <!-- Status Badge -->
+          <td>
+            {% if claim[9] == 'pending' %}
+              <span class="badge pending">Pending</span>
+            {% elif claim[9] == 'approved' %}
+              <span class="badge approved">Approved</span>
+            {% elif claim[9] == 'rejected' %}
+              <span class="badge rejected">Rejected</span>
+            {% endif %}
+          </td>
+
+          <!-- Actions -->
+          <td class="actions">
+            {% if claim[9] == 'pending' %}
+              <form method="POST" action="{{ url_for('admin_claim_approve', item_id=claim[0]) }}">
+                <button class="approve-btn">Approve</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin_claim_reject', item_id=claim[0]) }}">
+                <button class="reject-btn">Reject</button>
+              </form>
+            {% else %}
+              <span style="color:#999;">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="no-claims">No claims available.</p>
+  {% endif %}
+
+  <div class="back-btn">
+    <a href="{{ url_for('admin_dashboard') }}"><button>Back to Dashboard</button></a>
+  </div>
+</div>
+
+<!-- 🧠 JS -->
+<script>
+function filterStatus(status, event) {
+  const rows = document.querySelectorAll("#claimsTable tbody tr");
+  const buttons = document.querySelectorAll(".tab-btn");
+
+  // Highlight active tab
+  buttons.forEach(btn => btn.classList.remove("active"));
+  if (event) event.target.classList.add("active");
+
+  // Show or hide rows based on status
+  rows.forEach(row => {
+    const rowStatus = (row.getAttribute("data-status") || "").toLowerCase();
+    if (status === "all" || rowStatus === status) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+}
+</script>
+{% endblock %}

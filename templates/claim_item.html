@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hide flash messages for this page -->
+<style>
+.flash-wrap { display: none !important; }
+</style>
+
+<div class="claim-box">
+  <h2>Claim Item Verification</h2>
+
+  {% if item %}
+    <p><strong>Security Question:</strong> {{ item[4] }}</p>
+
+    <!-- If the item is still available (found) -->
+    {% if item[5] == 'found' %}
+      <form method="POST" action="" enctype="multipart/form-data">
+        <label for="security_answer">Your Answer:</label><br>
+        <input
+          type="text"
+          id="security_answer"
+          name="security_answer"
+          placeholder="Enter your answer"
+          required
+        ><br><br>
+
+        <label for="proof_photo">Upload Proof Photo (optional):</label><br>
+        <input
+          type="file"
+          id="proof_photo"
+          name="proof_photo"
+          accept="image/*"
+        ><br><br>
+
+        <button type="submit">Submit Claim</button>
+      </form>
+
+
+    <!-- If the claim is pending -->
+    {% elif item[5] == 'pending' %}
+      <div class="contact-box" style="background:#fff8e1; border-left:5px solid #ffb703;">
+        <h3>⏳ Claim Pending</h3>
+        <p>Your claim is awaiting admin approval. Please check again later.</p>
+      </div>
+
+    <!-- If the claim is approved (status = claimed) -->
+    {% elif item[5] == 'claimed' %}
+      <div class="contact-box">
+        <h3>✅ Claim Approved!</h3>
+        <p>You can now contact the finder:</p>
+        <p><strong>Phone:</strong> {{ item[6] }}</p>
+        <p><strong>Email:</strong> {{ item[7] }}</p>
+      </div>
+
+    <!-- If rejected -->
+    {% elif item[5] == 'rejected' %}
+      <div class="contact-box" style="background:#ffe6e6; border-left:5px solid #ff4d4d;">
+        <h3>❌ Claim Rejected</h3>
+        <p>Your claim was not approved. You may try again or contact admin for clarification.</p>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <p>Item not found or unavailable for claiming.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

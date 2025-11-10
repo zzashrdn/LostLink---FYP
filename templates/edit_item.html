@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="edit-box">
+  <h2>Edit Reported Item</h2>
+  <form method="POST" enctype="multipart/form-data">
+
+    <label>Item Name</label>
+    <input type="text" name="item_name" value="{{ item[1] }}" required>
+
+    <label>Description</label>
+    <textarea name="description" required>{{ item[2] }}</textarea>
+
+    <label>Location</label>
+    <input type="text" name="location" value="{{ item[3] }}" required>
+
+    <label>Status</label>
+    <select name="status">
+      <option value="lost" {% if item[9]=='lost' %}selected{% endif %}>Lost</option>
+      <option value="found" {% if item[9]=='found' %}selected{% endif %}>Found</option>
+    </select>
+
+    <label>Security Question</label>
+    <input type="text" name="security_question" value="{{ item[7] }}" required>
+
+    <label>Answer</label>
+    <input type="text" name="security_answer" value="{{ item[8] }}" required>
+
+    <label>Photo (optional)</label>
+    <input type="file" name="photo" accept="image/*">
+
+    <button type="submit">Update Item</button>
+  </form>
+</div>
+
+{% endblock %}

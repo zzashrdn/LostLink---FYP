@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="claims-wrapper">
+  <h2>All Claim Requests</h2>
+
+  <!-- 🔍 Search Bar -->
+  <div class="search-container">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search by item name, user, or location..."
+      onkeyup="filterTable()"
+    />
+  </div>
+
+  {% if claims %}
+  <div class="table-container">
+    <table class="claims-table" id="claimsTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">ID ⬍</th>
+          <th onclick="sortTable(1)">Item Name ⬍</th>
+          <th>Description</th>
+          <th>Location</th>
+          <th>Date Reported</th>
+          <th>Reported By</th>
+          <th>Claimed By</th>
+          <th>Security Question</th>
+          <th>User Answer</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for claim in claims %}
+        <tr>
+          <td>{{ claim[0] }}</td>
+          <td>{{ claim[1] }}</td>
+          <td>{{ claim[2] }}</td>
+          <td>{{ claim[3] }}</td>
+          <td>{{ claim[4] }}</td>
+          <td>{{ claim[5] }}</td>
+          <td>{{ claim[6] or '-' }}</td>
+          <td>{{ claim[7] or '-' }}</td>
+          <td>{{ claim[8] or '-' }}</td>
+          <td>
+            {% if claim[9] == 'pending' %}
+              <span class="badge pending">Pending</span>
+            {% elif claim[9] == 'approved' %}
+              <span class="badge approved">Approved</span>
+            {% elif claim[9] == 'rejected' %}
+              <span class="badge rejected">Rejected</span>
+            {% endif %}
+          </td>
+          <td class="actions">
+            {% if claim[9] == 'pending' %}
+            <form method="POST" action="{{ url_for('admin_claim_approve', item_id=claim[0]) }}">
+              <button class="btn-approve">Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin_claim_reject', item_id=claim[0]) }}">
+              <button class="btn-reject">Reject</button>
+            </form>
+            {% else %}
+              <span class="no-action">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="no-claims">No claim records available.</p>
+  {% endif %}
+
+  <div class="back-btn">
+    <a href="{{ url_for('admin_dashboard') }}"><button>Back to Dashboard</button></a>
+  </div>
+</div>
+
+<!-- 🔹 JS: Search + Sort -->
+<script>
+  function filterTable() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#claimsTable tbody tr");
+    rows.forEach(row => {
+      row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+    });
+  }
+
+  function sortTable(n) {
+    const table = document.getElementById("claimsTable");
+    let switching = true;
+    let dir = "asc";
+    while (switching) {
+      switching = false;
+      const rows = table.rows;
+      for (let i = 1; i < rows.length - 1; i++) {
+        const x = rows[i].getElementsByTagName("td")[n];
+        const y = rows[i + 1].getElementsByTagName("td")[n];
+        let shouldSwitch = false;
+        if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        } else if (dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      } else if (dir === "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+</script>
+{% endblock %}

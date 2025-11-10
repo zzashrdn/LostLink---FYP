@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-dashboard">
+  <h2>Welcome Back, {{ session['name'] }} 👋</h2>
+  <p>You are logged in as an <strong>Administrator</strong>.</p>
+
+  <div class="dashboard-buttons">
+    <a href="{{ url_for('admin_users') }}"><button> Manage Users</button></a>
+    <a href="{{ url_for('admin_claims') }}"><button> Review Claims</button></a>
+    <a href="{{ url_for('admin_items') }}"><button> Manage Items</button></a>
+    <a href="{{ url_for('admin_activity_log') }}">
+      <button class="dashboard-btn">View Activity Log</button>
+    </a>
+  </div>
+</div>
+
+<style>
+.admin-dashboard {
+  background: white;
+  padding: 60px 80px;
+  margin: 80px auto;
+  width: 100%;
+  max-width: 1200px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.admin-dashboard h2 {
+  color: #023e8a;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.admin-dashboard p {
+  color: #555;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+}
+
+.dashboard-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard-buttons button {
+  background: #0077b6;
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+  width: 100%;
+}
+
+.dashboard-buttons button:hover {
+  background: #005f8d;
+  transform: translateY(-2px);
+}
+</style>
+{% endblock %}

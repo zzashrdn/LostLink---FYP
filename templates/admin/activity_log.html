@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="log-wrapper">
+  <div class="log-header">
+    <h2>Activity Log</h2>
+  </div>
+
+  {% if logs %}
+  <div class="table-container">
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Item</th>
+          <th>Details</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log[0] }}</td>
+          <td>{{ log[1] }}</td>
+          <td>{{ log[2] }}</td>
+          <td>{{ log[3] or '—' }}</td>
+          <td>{{ log[4] or '—' }}</td>
+          <td>{{ log[5] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="no-logs">No activity recorded yet.</p>
+  {% endif %}
+
+  <!-- ✅ Back Button -->
+  <div class="back-btn">
+    <a href="{{ url_for('admin_dashboard') }}">
+      <button type="button">Back to Dashboard</button>
+    </a>
+  </div>
+</div>
+
+<style>
+.log-wrapper {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 60px;
+  max-width: 1100px;
+  margin: 80px auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.log-header h2 {
+  color: #023e8a;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 25px;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-table th, .log-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+}
+
+.log-table th {
+  background: #caf0f8;
+  color: #023e8a;
+  font-weight: 700;
+}
+
+.log-table tr:hover {
+  background: #f1faff;
+}
+
+.back-btn {
+  margin-top: 25px;
+}
+
+.back-btn button {
+  background: #00b4d8;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 30px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.back-btn button:hover {
+  background: #0096c7;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hide flash messages on this page -->
+<style>.flash-wrap { display: none !important; }</style>
+
+<div class="search-wrapper">
+  <div class="search-box">
+    <h2>Search Lost/Found Items</h2>
+
+    <!-- Search Form -->
+    <form method="POST">
+      <input type="text" name="query" placeholder="Search by keyword..." value="{{ query }}">
+      <select name="status">
+        <option value="all" {% if status == "all" %}selected{% endif %}>All</option>
+        <option value="lost" {% if status == "lost" %}selected{% endif %}>Lost</option>
+        <option value="found" {% if status == "found" %}selected{% endif %}>Found</option>
+        <option value="claimed" {% if status == "claimed" %}selected{% endif %}>Claimed</option>
+      </select>
+      <button type="submit">Search</button>
+    </form>
+
+    {% if results %}
+      <div class="items-grid">
+        {% for item in results %}
+          <div class="item-card">
+            <h3>{{ item[1] }}
+              {% if item[6] %}
+                <span class="badge {{ item[6]|lower }}">{{ item[6]|capitalize }}</span>
+              {% endif %}
+            </h3>
+            <p><strong>Description:</strong> {{ item[2] }}</p>
+            <p><strong>Location:</strong> {{ item[3] }}</p>
+
+            {% if session.get('is_admin') == 1 %}
+              <p><strong>Reported by:</strong> {{ item[7] }} on {{ item[4] }}</p>
+              <p><strong>Contact:</strong> {{ item[8] }}</p>
+              <p><strong>Email:</strong> {{ item[9] }}</p>
+            
+              {% else %}
+              <p><strong>Reported by:</strong> Anonymous on {{ item[4] }}</p>
+            {% endif %}
+
+
+            {% if item[6] == 'found' %}
+              <form method="POST" action="{{ url_for('claim_item', item_id=item[0]) }}">
+                <button>Claim This Item</button>
+              </form>
+            {% elif item[6] == 'claimed' %}
+              <p><strong>Status:</strong> ✅ Already Claimed</p>
+            {% else %}
+              <p><strong>Status:</strong> {{ item[6]|capitalize }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% elif query %}
+      <p>No results found for "{{ query }}"</p>
+    {% endif %}
+
+    <a href="{{ url_for('home') }}"><button class="back-btn">Back to Home</button></a>
+  </div>
+</div>
+
+
+{% endblock %}
