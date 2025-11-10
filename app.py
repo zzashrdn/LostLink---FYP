@@ -39,8 +39,8 @@ else:
     app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
     app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
     app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
-
-app.config['MYSQL_CHARSET'] = 'utf8mb4'
+    app.config['MYSQL_SSL_CA'] = '/etc/ssl/certs/ca-certificates.crt'  # ✅ required for PlanetScale
+    app.config['MYSQL_CHARSET'] = 'utf8mb4'
 
 mysql = MySQL(app)
 
@@ -75,6 +75,10 @@ def index():
         return redirect(url_for('home'))
     else:
         return redirect(url_for('login'))
+
+@app.route('/test')
+def test():
+    return "App is running and routes are loading fine!"
 
 # ======================
 # Home Page
