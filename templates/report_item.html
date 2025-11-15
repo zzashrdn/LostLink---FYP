@@ -57,34 +57,4 @@
   </div>
 </div>
 
-<script>
-  const statusSelect = document.getElementById("status");
-  const securitySection = document.getElementById("security-section");
-  const contactTitle = document.getElementById("contact-title");
-  const contactDesc = document.getElementById("contact-desc");
-  const contactNumber = document.getElementById("contact_number");
-  const utpEmail = document.getElementById("utp_email");
-
-  function toggleSections() {
-    const status = statusSelect.value.toLowerCase();
-
-    // Toggle security section
-    securitySection.style.display = status === "found" ? "block" : "none";
-
-    if (status === "found") {
-      contactTitle.textContent = "Finder’s Contact Information";
-      contactDesc.textContent = "This information will only be visible to admin until the claim is approved.";
-      contactNumber.required = true;
-      utpEmail.required = true;
-    } else {
-      contactTitle.textContent = "Owner’s Information";
-      contactDesc.textContent = "Optional: provide your contact if you want admin or finder to reach you.";
-      contactNumber.required = false;
-      utpEmail.required = false;
-    }
-  }
-
-  toggleSections();
-  statusSelect.addEventListener("change", toggleSections);
-</script>
 {% endblock %}

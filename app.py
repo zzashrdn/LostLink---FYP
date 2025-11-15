@@ -150,6 +150,12 @@ def register():
         name = request.form['name'].strip()
         email = request.form['email'].strip().lower()
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        # Check if both passwords match
+        if password != confirm_password:
+            flash('Passwords do not match. Please try again.', 'error')
+            return redirect(url_for('register'))
 
         # Email restriction (UTP only)
         if not email.endswith('@utp.edu.my'):
@@ -161,7 +167,6 @@ def register():
         if not re.match(pattern, password):
             flash('Password must be at least 8 characters long and include 1 uppercase, 1 lowercase, 1 number, and 1 symbol.', 'error')
             return redirect(url_for('register'))
-
 
         # Check if email already exists
         cur = mysql.connection.cursor()
@@ -182,8 +187,6 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')
-
-
 
 # ======================
 # Login
@@ -273,6 +276,7 @@ def admin_items():
     items = cur.fetchall()
     cur.close()
     return render_template('admin/items.html', items=items)
+
 
 @app.route('/admin/items/<int:item_id>/delete', methods=['POST'])
 @admin_required
@@ -511,11 +515,28 @@ def demote_user(user_id):
 @admin_required
 def delete_user(user_id):
     cur = mysql.connection.cursor()
+
+    # 1️⃣ Delete all activity logs tied to this user's reported items
+    cur.execute("""
+        DELETE FROM activity_log
+        WHERE item_id IN (SELECT id FROM items WHERE user_id = %s OR claimed_by = %s)
+    """, (user_id, user_id))
+
+    # 2️⃣ Delete all activity logs directly by this user
+    cur.execute("DELETE FROM activity_log WHERE user_id = %s", (user_id,))
+
+    # 3️⃣ Delete all items reported or claimed by this user
+    cur.execute("DELETE FROM items WHERE user_id = %s OR claimed_by = %s", (user_id, user_id))
+
+    # 4️⃣ Finally, delete the user record
     cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+
     mysql.connection.commit()
     cur.close()
-    flash("❌ User deleted successfully.", "error")
+
+    flash("❌ User and all related data removed successfully.", "info")
     return redirect(url_for('admin_users'))
+
 
 # ======================
 # Report Item
@@ -569,7 +590,8 @@ def report_item():
         )
 
         flash("Item reported successfully!", "success")
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('view_items'))
+
 
 
     return render_template('report_item.html')

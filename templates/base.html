@@ -5,8 +5,11 @@
   <title>LostLink</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
-  <style>
-    /* ===============================
+  
+</head>
+
+<style>
+ /* ===============================
        NAVBAR STYLING
        =============================== */
     .navbar {
@@ -35,11 +38,29 @@
       text-decoration: underline;
     }
 
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #00334d;
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .utp-logo {
+      height: 38px;
+      width: auto;
+    }
+
+
     /* Navbar Right Section */
     .navbar-right {
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-right: 20px;
     }
 
     /* Logout & Notification Buttons */
@@ -180,24 +201,30 @@
         flex-direction: column;
       }
     }
-  </style>
-</head>
-
+</style>
+  
 <body>
   <!-- NAVBAR -->
   <div class="navbar">
     <div class="logo">
       {% if session.get('is_admin') == 1 %}
-        <a href="{{ url_for('admin_dashboard') }}">LostLink</a>
+        <a href="{{ url_for('admin_dashboard') }}" class="brand-link">
+          <img src="{{ url_for('static', filename='images/UTP-logo.png') }}" alt="UTP Logo" class="utp-logo">
+          <span>LostLink</span>
+        </a>
       {% else %}
-        <a href="{{ url_for('home') }}">LostLink</a>
+        <a href="{{ url_for('home') }}" class="brand-link">
+          <img src="{{ url_for('static', filename='images/UTP-logo.png') }}" alt="UTP Logo" class="utp-logo">
+          <span>LostLink</span>
+        </a>
       {% endif %}
     </div>
 
-    {% if session.get('user_id') %}
+
+    
+    {% if session.get('user_id') and request.endpoint not in ['login', 'register'] %}
     <div class="navbar-right">
       {% if session.get('is_admin') != 1 %}
-        <!-- Only normal users see this -->
         <form action="{{ url_for('notifications') }}" method="GET" style="margin:0;">
           <button type="submit" class="notif-btn">🔔 Notifications</button>
         </form>
@@ -207,6 +234,7 @@
       </form>
     </div>
     {% endif %}
+
   </div>
 
   <!-- PAGE CONTENT -->
@@ -229,18 +257,9 @@
     </div>
   </div>
 
-  <!-- Flash close button JS -->
-  <script>
-  document.addEventListener("click", function(e) {
-    if (e.target.classList.contains("close-btn")) {
-      const flash = e.target.parentElement;
-      flash.style.opacity = "0";
-      flash.style.transform = "translateY(-10px)";
-      setTimeout(() => flash.remove(), 300);
-    }
-  });
-  </script>
-
   {% block scripts %}{% endblock %}
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
 </body>
 </html>

@@ -1,43 +1,66 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="admin-wrapper">
-  <h2>Manage Users</h2>
 
-  <table class="user-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in users %}
-      <tr>
-        <td>{{ user[0] }}</td>
-        <td>{{ user[1] }}</td>
-        <td>{{ user[2] }}</td>
-        <td>
-          {% if user[3] == 1 %}
-            <span class="badge role-admin">Admin</span>
-          {% else %}
-            <span class="badge role-user">User</span>
-          {% endif %}
-        </td>
-        <td class="actions">
-          <form method="POST" action="{{ url_for('delete_user', user_id=user[0]) }}" onsubmit="return confirm('Are you sure you want to delete this user?');">
-            <button class="delete-btn">Delete</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="items-wrapper">
+  <div class="items-box">
+    <h2>Manage Users</h2>
 
-  <div class="back-btn">
-    <a href="{{ url_for('admin_dashboard') }}"><button>Back to Dashboard</button></a>
+    <!-- 🔍 Search + Filter -->
+    <div class="filter-bar">
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="Search by name or email..." 
+        onkeyup="filterTable()" 
+      />
+      <select id="roleFilter" onchange="filterTable()">
+        <option value="all">All Roles</option>
+        <option value="admin">Admin</option>
+        <option value="user">User</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <table class="log-table" id="usersTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)">ID ⬍</th>
+            <th onclick="sortTable(1)">Name ⬍</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr data-role="{{ 'admin' if user[3] == 1 else 'user' }}">
+            <td>{{ user[0] }}</td>
+            <td>{{ user[1] }}</td>
+            <td>{{ user[2] }}</td>
+            <td>
+              {% if user[3] == 1 %}
+                <span class="badge role-admin">Admin</span>
+              {% else %}
+                <span class="badge role-user">User</span>
+              {% endif %}
+            </td>
+            <td class="actions">
+              <form method="POST" action="{{ url_for('delete_user', user_id=user[0]) }}" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                <button class="delete-btn">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="back-btn">
+      <a href="{{ url_for('admin_dashboard') }}"><button>Back to Dashboard</button></a>
+    </div>
   </div>
 </div>
+
+
 {% endblock %}
+

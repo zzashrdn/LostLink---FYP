@@ -36,16 +36,5 @@
   </div>
 </div>
 
-<!-- Toggle password visibility -->
-<script>
-function togglePassword() {
-  const passwordInput = document.getElementById("password");
-  const toggleIcon = document.querySelector(".toggle-password");
-  const isHidden = passwordInput.type === "password";
-
-  passwordInput.type = isHidden ? "text" : "password";
-  toggleIcon.textContent = isHidden ? "🙈" : "👁️";
-}
-</script>
 
 {% endblock %}

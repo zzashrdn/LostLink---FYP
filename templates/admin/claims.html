@@ -108,25 +108,4 @@
   </div>
 </div>
 
-<!-- 🧠 JS -->
-<script>
-function filterStatus(status, event) {
-  const rows = document.querySelectorAll("#claimsTable tbody tr");
-  const buttons = document.querySelectorAll(".tab-btn");
-
-  // Highlight active tab
-  buttons.forEach(btn => btn.classList.remove("active"));
-  if (event) event.target.classList.add("active");
-
-  // Show or hide rows based on status
-  rows.forEach(row => {
-    const rowStatus = (row.getAttribute("data-status") || "").toLowerCase();
-    if (status === "all" || rowStatus === status) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
-    }
-  });
-}
-</script>
 {% endblock %}

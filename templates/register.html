@@ -3,15 +3,30 @@
 <div class="auth-container">
   <div class="auth-box">
     <h2>Create Account</h2>
+
     <form method="POST" class="auth-form">
       <input type="text" name="name" placeholder="Your Name" required>
       <input type="email" name="email" placeholder="Your UTP Email (e.g. yourname@utp.edu.my)" required>
 
-      <!-- Password with eye icon (no extra info below) -->
+      <!-- Password -->
       <div class="password-field">
-        <input type="password" id="password" name="password" placeholder="Password" required
+        <input type="password" 
+               id="password" 
+               name="password" 
+               placeholder="Password" 
+               required
                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>
-        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+        <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="password-field">
+        <input type="password" 
+               id="confirm_password" 
+               name="confirm_password" 
+               placeholder="Confirm Password" 
+               required>
+        <span class="toggle-password" onclick="togglePassword('confirm_password', this)">👁️</span>
       </div>
 
       <button type="submit">Sign Up</button>
@@ -20,18 +35,5 @@
     <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
   </div>
 </div>
-
-<!-- JS for eye icon toggle -->
-<script>
-function togglePassword() {
-  const passwordInput = document.getElementById("password");
-  const toggleIcon = document.querySelector(".toggle-password");
-  const isHidden = passwordInput.type === "password";
-
-  passwordInput.type = isHidden ? "text" : "password";
-  toggleIcon.textContent = isHidden ? "🙈" : "👁️";
-}
-</script>
 {% endblock %}
-
 

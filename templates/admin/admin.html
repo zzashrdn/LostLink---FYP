@@ -78,43 +78,4 @@
   </div>
 </div>
 
-<!-- 🔹 JS: Search + Sort -->
-<script>
-  function filterTable() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll("#claimsTable tbody tr");
-    rows.forEach(row => {
-      row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
-    });
-  }
-
-  function sortTable(n) {
-    const table = document.getElementById("claimsTable");
-    let switching = true;
-    let dir = "asc";
-    while (switching) {
-      switching = false;
-      const rows = table.rows;
-      for (let i = 1; i < rows.length - 1; i++) {
-        const x = rows[i].getElementsByTagName("td")[n];
-        const y = rows[i + 1].getElementsByTagName("td")[n];
-        let shouldSwitch = false;
-        if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-          shouldSwitch = true;
-          break;
-        } else if (dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-          shouldSwitch = true;
-          break;
-        }
-      }
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-      } else if (dir === "asc") {
-        dir = "desc";
-        switching = true;
-      }
-    }
-  }
-</script>
 {% endblock %}
