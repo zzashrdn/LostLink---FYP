@@ -315,10 +315,6 @@ def admin_claims():
     """)
 
 
-
-
-
-    
     claims = cur.fetchall()
     cur.close()
 
@@ -692,15 +688,24 @@ def claim_item(item_id):
 
     if not item:
         flash("Item not found.", "error")
+        cur.close()
         return redirect(url_for('view_items'))
 
     if item[5] not in ('found', 'lost'):
         flash("Only found items can be claimed.", "warning")
+        cur.close()
         return redirect(url_for('view_items'))
 
+    # ----------------------------
+    # SAFE POST BLOCK (NO CRASH)
+    # ----------------------------
     if request.method == 'POST':
-        security_answer = request.form['security_answer']
+        security_answer = request.form.get('security_answer')  # <-- SAFE GET()
         user_id = session.get('user_id')
+
+        if not security_answer:
+            flash("Please provide an answer to the security question.", "error")
+            return redirect(url_for('claim_item', item_id=item_id))
 
         # Handle uploaded proof image
         proof_photo = request.files.get('proof_photo')
@@ -709,7 +714,7 @@ def claim_item(item_id):
             proof_photo_name = secure_filename(proof_photo.filename)
             proof_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], proof_photo_name))
 
-        # Update claim details (save proof photo + mark as pending claim)
+        # Update claim details
         cur.execute("""
             UPDATE items 
             SET user_answer = %s,
@@ -721,7 +726,7 @@ def claim_item(item_id):
         """, (security_answer, user_id, proof_photo_name, item_id))
         mysql.connection.commit()
 
-        # ✅ Log the claim submission (INSIDE POST block)
+        # Log this claim
         log_activity(
             user_id,
             "Submitted Claim",

@@ -29,6 +29,13 @@
                 <span class="badge {{ item[6]|lower }}">{{ item[6]|capitalize }}</span>
               {% endif %}
             </h3>
+
+            {% if item[5] %}
+            <img src="{{ url_for('static', filename='uploads/' ~ item[5]) }}" 
+                alt="Item photo" class="item-photo">
+            {% endif %}
+
+
             <p><strong>Description:</strong> {{ item[2] }}</p>
             <p><strong>Location:</strong> {{ item[3] }}</p>
 
@@ -40,7 +47,6 @@
               {% else %}
               <p><strong>Reported by:</strong> Anonymous on {{ item[4] }}</p>
             {% endif %}
-
 
             {% if item[6] == 'found' %}
               <form method="POST" action="{{ url_for('claim_item', item_id=item[0]) }}">
